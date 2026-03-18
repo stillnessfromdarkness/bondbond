@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liber — Libreria</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ink: #1a1612;
+  --parchment: #f5f0e8;
+  --parchment-dark: #ede6d6;
+  --parchment-mid: #e5dcc8;
+  --gold: #b8965a;
+  --gold-light: #d4b07a;
+  --gold-pale: #f0e4c8;
+  --rust: #8b3a2a;
+  --muted: #7a7060;
+  --muted-light: #a09880;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--parchment);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ── NAV ── */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(245,240,232,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(26,22,18,0.08);
+  display: flex;
+  align-items: center;
+  padding: 0 48px;
+  height: 60px;
+  gap: 40px;
+}
+
+.nav-logo {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 22px;
+  font-weight: 300;
+  letter-spacing: 0.14em;
+  color: var(--ink);
+  text-decoration: none;
+  margin-right: auto;
+}
+
+.nav-link {
+  font-size: 13px;
+  color: var(--muted);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  transition: color 0.2s;
+}
+.nav-link:hover, .nav-link.active { color: var(--ink); }
+
+.nav-btn {
+  background: var(--ink);
+  color: var(--parchment);
+  border: none;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.nav-btn:hover { background: #2e2820; }
+
+/* ── HERO ── */
+.hero {
+  padding: 72px 48px 60px;
+  display: flex;
+  align-items: flex-end;
+  gap: 60px;
+  border-bottom: 1px solid rgba(26,22,18,0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -60px;
+  width: 500px; height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(184,150,90,0.07) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-text { flex: 1; min-width: 0; }
+
+.hero-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+
+.hero-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(36px, 5vw, 58px);
+  font-weight: 300;
+  line-height: 1.15;
+  color: var(--ink);
+  margin-bottom: 20px;
+}
+
+.hero-title em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+.hero-sub {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.7;
+  max-width: 480px;
+  margin-bottom: 32px;
+}
+
+.hero-actions { display: flex; gap: 12px; align-items: center; }
+
+.btn-primary {
+  background: var(--ink);
+  color: var(--parchment);
+  border: none;
+  border-radius: 6px;
+  padding: 12px 24px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-primary:hover { background: #2e2820; }
+.btn-primary:active { transform: scale(0.98); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid rgba(26,22,18,0.2);
+  border-radius: 6px;
+  padding: 11px 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-ghost:hover { border-color: var(--ink); color: var(--ink); }
+
+/* Hero stats */
+.hero-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.stat-block { text-align: right; }
+.stat-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 36px;
+  font-weight: 300;
+  color: var(--ink);
+  line-height: 1;
+}
+.stat-label {
+  font-size: 11px;
+  color: var(--muted-light);
+  letter-spacing: 0.08em;
+  margin-top: 3px;
+}
+
+/* ── CONTINUE READING ── */
+.continue-strip {
+  background: var(--ink);
+  padding: 24px 48px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.continue-label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(245,240,232,0.4);
+  white-space: nowrap;
+}
+
+.continue-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 14px 18px;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-decoration: none;
+  flex: 1;
+  max-width: 380px;
+}
+.continue-card:hover { background: rgba(255,255,255,0.1); }
+
+.continue-spine {
+  width: 6px;
+  height: 48px;
+  border-radius: 2px;
+  background: var(--gold);
+  flex-shrink: 0;
+}
+
+.continue-info { flex: 1; min-width: 0; }
+.continue-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--parchment);
+  margin-bottom: 3px;
+}
+.continue-scene {
+  font-size: 12px;
+  color: rgba(245,240,232,0.45);
+}
+
+.continue-progress-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+.continue-pct { font-size: 12px; color: var(--gold-light); }
+.continue-bar {
+  width: 60px;
+  height: 3px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.continue-fill {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 2px;
+}
+
+.continue-resume {
+  background: var(--gold);
+  color: var(--ink);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+  margin-left: auto;
+}
+.continue-resume:hover { background: var(--gold-light); }
+
+/* ── LIBRARY ── */
+.library {
+  padding: 48px 48px 80px;
+}
+
+.library-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.library-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 300;
+}
+
+.library-count {
+  font-size: 13px;
+  color: var(--muted-light);
+}
+
+.library-filters { margin-left: auto; display: flex; gap: 6px; }
+
+.filter-pill {
+  padding: 6px 14px;
+  border-radius: 99px;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid rgba(26,22,18,0.15);
+  background: transparent;
+  color: var(--muted);
+  transition: all 0.2s;
+}
+.filter-pill:hover { border-color: var(--ink); color: var(--ink); }
+.filter-pill.active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--parchment);
+}
+
+/* Book grid */
+.book-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 24px;
+}
+
+.book-card {
+  cursor: pointer;
+  transition: transform 0.2s;
+  animation: fadeIn 0.5s ease both;
+}
+.book-card:hover { transform: translateY(-4px); }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.book-card:nth-child(1) { animation-delay: 0.05s; }
+.book-card:nth-child(2) { animation-delay: 0.10s; }
+.book-card:nth-child(3) { animation-delay: 0.15s; }
+.book-card:nth-child(4) { animation-delay: 0.20s; }
+.book-card:nth-child(5) { animation-delay: 0.25s; }
+.book-card:nth-child(6) { animation-delay: 0.30s; }
+
+.book-cover-art {
+  aspect-ratio: 2/3;
+  border-radius: 4px 8px 8px 4px;
+  margin-bottom: 12px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 3px 4px 16px rgba(26,22,18,0.18);
+  transition: box-shadow 0.2s;
+}
+.book-card:hover .book-cover-art {
+  box-shadow: 6px 8px 24px rgba(26,22,18,0.25);
+}
+
+.book-spine {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 8px;
+  background: rgba(0,0,0,0.15);
+}
+
+.book-cover-inner {
+  width: 100%; height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 18px 14px 14px;
+}
+
+.book-cover-category {
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  opacity: 0.7;
+}
+
+.book-cover-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.book-cover-author {
+  font-size: 11px;
+  margin-top: 4px;
+  opacity: 0.6;
+}
+
+/* Cover color themes */
+.cover-genesis   { background: linear-gradient(160deg, #2d3a1e, #4a5e2a); color: #d4e8b0; }
+.cover-iliad     { background: linear-gradient(160deg, #3a2010, #6b3818); color: #f0c88a; }
+.cover-dante     { background: linear-gradient(160deg, #1a1a2e, #2d2d5a); color: #b8b0e8; }
+.cover-odyssey   { background: linear-gradient(160deg, #0d2b3a, #1a4d60); color: #9fd4e8; }
+.cover-hamlet    { background: linear-gradient(160deg, #2a1a0d, #4a3010); color: #d4b888; }
+.cover-quixote   { background: linear-gradient(160deg, #3a1a10, #6a2e18); color: #f0a878; }
+
+.book-meta { display: flex; align-items: center; justify-content: space-between; }
+
+.book-meta-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.book-meta-sub {
+  font-size: 12px;
+  color: var(--muted-light);
+}
+
+.book-tag {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 99px;
+  background: var(--parchment-dark);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.book-tag.active-tag {
+  background: var(--gold-pale);
+  color: #7a5a18;
+}
+
+/* ── UPLOAD CTA ── */
+.upload-cta {
+  margin-top: 48px;
+  padding: 36px 40px;
+  border: 1.5px dashed rgba(26,22,18,0.2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  text-decoration: none;
+}
+.upload-cta:hover {
+  border-color: var(--gold);
+  background: rgba(184,150,90,0.04);
+}
+
+.upload-icon {
+  width: 52px; height: 52px;
+  border-radius: 10px;
+  background: var(--parchment-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.upload-cta:hover .upload-icon { background: var(--gold-pale); }
+
+.upload-text { flex: 1; }
+.upload-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-weight: 400;
+  margin-bottom: 4px;
+}
+.upload-sub { font-size: 13px; color: var(--muted); }
+
+.upload-arrow {
+  font-size: 20px;
+  color: var(--muted-light);
+  transition: transform 0.2s, color 0.2s;
+}
+.upload-cta:hover .upload-arrow { transform: translateX(4px); color: var(--gold); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#">LIBER</a>
+  <a class="nav-link active" href="#">Libreria</a>
+  <a class="nav-link" href="#">Esplora</a>
+  <a class="nav-link" href="#">Le mie storie</a>
+  <a class="nav-btn" href="carica.html">+ Carica testo</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-text">
+    <div class="hero-eyebrow">Narrativa interattiva con AI</div>
+    <h1 class="hero-title">
+      Entra dentro<br>
+      <em>ogni storia</em><br>
+      mai scritta
+    </h1>
+    <p class="hero-sub">
+      Carica qualsiasi testo — classici, sacri, letteratura mondiale — e diventa 
+      un personaggio. Parla liberamente, scegli il tuo percorso, cambia la storia.
+    </p>
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="window.location='carica.html'">
+        ＋ Carica un testo
+      </button>
+      <button class="btn-ghost">Scopri i classici</button>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-block">
+      <div class="stat-num">2.4k</div>
+      <div class="stat-label">testi caricati</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-num">18k</div>
+      <div class="stat-label">storie create</div>
+    </div>
+    <div class="stat-block">
+      <div class="stat-num">∞</div>
+      <div class="stat-label">finali possibili</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTINUE READING -->
+<div class="continue-strip">
+  <span class="continue-label">Riprendi</span>
+  <a class="continue-card" href="lettore_interattivo.html">
+    <div class="continue-spine"></div>
+    <div class="continue-info">
+      <div class="continue-title">La Genesi</div>
+      <div class="continue-scene">Scena 2 · La tentazione · come Eva</div>
+    </div>
+    <div class="continue-progress-wrap">
+      <span class="continue-pct">35%</span>
+      <div class="continue-bar"><div class="continue-fill" style="width:35%"></div></div>
+    </div>
+  </a>
+  <button class="continue-resume" onclick="window.location='lettore_interattivo.html'">
+    Riprendi →
+  </button>
+</div>
+
+<!-- LIBRARY -->
+<section class="library">
+  <div class="library-header">
+    <h2 class="library-title">La tua libreria</h2>
+    <span class="library-count">6 testi</span>
+    <div class="library-filters">
+      <button class="filter-pill active">Tutti</button>
+      <button class="filter-pill">Sacri</button>
+      <button class="filter-pill">Classici</button>
+      <button class="filter-pill">Miei</button>
+    </div>
+  </div>
+
+  <div class="book-grid">
+
+    <div class="book-card" onclick="window.location='lettore_interattivo.html'">
+      <div class="book-cover-art cover-genesis">
+        <div class="book-spine"></div>
+        <div class="book-cover-inner">
+          <div class="book-cover-category">Antico Testamento</div>
+          <div class="book-cover-name">La Genesi</div>
+          <div class="book-cover-author">Bibbia</div>
+        </div>
+      </div>
+      <div class="book-meta">
+        <div>
+          <div class="book-meta-title">La Genesi</div>
+          <div class="book-meta-sub">6 scene · 3 personaggi</div>
+        </div>
+        <span class="book-tag active-tag">In corso</span>
+      </div>
+    </div>
+
+    <div class="book-card">
+      <div class="book-cover-art cover-iliad">
+        <div class="book-spine"></div>
+        <div class="book-cover-inner">
+          <div class="book-cover-category">Epica greca</div>
+          <div class="book-cover-name">L'Iliade</div>
+          <div class="book-cover-author">Omero</div>
+        </div>
+      </div>
+      <div class="book-meta">
+        <div>
+          <div class="book-meta-title">L'Iliade</div>
+          <div class="book-meta-sub">12 scene · 8 personaggi</div>
+        </div>
+        <span class="book-tag">Classico</span>
+      </div>
+    </div>
+
+    <div class="book-card">
+      <div class="book-cover-art cover-dante">
+        <div class="book-spine"></div>
+        <div class="book-cover-inner">
+          <div class="book-cover-category">Poesia medievale</div>
+          <div class="book-cover-name">Divina Commedia</div>
+          <div class="book-cover-author">Dante Alighieri</div>
+        </div>
+      </div>
+      <div class="book-meta">
+        <div>
+          <div class="book-meta-title">Divina Commedia</div>
+          <div class="book-meta-sub">9 scene · 5 personaggi</div>
+        </div>
+        <span class="book-tag">Classico</span>
+      </div>
+    </div>
+
+    <div class="book-card">
+      <div class="book-cover-art cover-odyssey">
+        <div class="book-spine"></div>
+        <div class="book-cover-inner">
+          <div class="book-cover-category">Epica greca</div>
+          <div class="book-cover-name">L'Odissea</div>
+          <div class="book-cover-author">Omero</div>
+        </div>
+      </div>
+      <div class="book-meta">
+        <div>
+          <div class="book-meta-title">L'Odissea</div>
+          <div class="book-meta-sub">10 scene · 6 personaggi</div>
+        </div>
+        <span class="book-tag">Classico</span>
+      </div>
+    </div>
+
+    <div class="book-card">
+      <div class="book-cover-art cover-hamlet">
+        <div class="book-spine"></div>
+        <div class="book-cover-inner">
+          <div class="book-cover-category">Teatro</div>
+          <div class="book-cover-name">Amleto</div>
+          <div class="book-cover-author">Shakespeare</div>
+        </div>
+      </div>
+      <div class="book-meta">
+        <div>
+          <div class="book-meta-title">Amleto</div>
+          <div class="book-meta-sub">8 scene · 7 personaggi</div>
+        </div>
+        <span class="book-tag">Classico</span>
+      </div>
+    </div>
+
+    <div class="book-card">
+      <div class="book-cover-art cover-quixote">
+        <div class="book-spine"></div>
+        <div class="book-cover-inner">
+          <div class="book-cover-category">Romanzo</div>
+          <div class="book-cover-name">Don Chisciotte</div>
+          <div class="book-cover-author">Cervantes</div>
+        </div>
+      </div>
+      <div class="book-meta">
+        <div>
+          <div class="book-meta-title">Don Chisciotte</div>
+          <div class="book-meta-sub">7 scene · 4 personaggi</div>
+        </div>
+        <span class="book-tag">Classico</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Upload CTA -->
+  <a class="upload-cta" href="carica.html">
+    <div class="upload-icon">📄</div>
+    <div class="upload-text">
+      <div class="upload-title">Aggiungi un tuo testo</div>
+      <div class="upload-sub">PDF, ePub, TXT o incolla direttamente il testo — l'AI crea le scene automaticamente</div>
+    </div>
+    <div class="upload-arrow">→</div>
+  </a>
+
+</section>
+
+<script>
+  document.querySelectorAll('.filter-pill').forEach(pill => {
+    pill.addEventListener('click', function() {
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

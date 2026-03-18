@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liber — Lettore Interattivo</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1612;
+    --parchment: #f5f0e8;
+    --parchment-dark: #ede6d6;
+    --gold: #b8965a;
+    --gold-light: #d4b07a;
+    --rust: #8b3a2a;
+    --muted: #7a7060;
+    --sidebar-w: 280px;
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--parchment);
+    color: var(--ink);
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    background: var(--ink);
+    color: var(--parchment);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .sidebar-top {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    color: var(--gold-light);
+    margin-bottom: 20px;
+  }
+
+  .book-cover {
+    background: linear-gradient(145deg, #2a2016, #3d3020);
+    border: 1px solid rgba(184,150,90,0.3);
+    border-radius: 4px;
+    padding: 16px 14px;
+    margin-bottom: 12px;
+  }
+
+  .book-cover-label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+
+  .book-cover-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--parchment);
+    line-height: 1.3;
+  }
+
+  .book-cover-sub {
+    font-size: 11px;
+    color: rgba(245,240,232,0.4);
+    margin-top: 4px;
+  }
+
+  .sidebar-section {
+    padding: 18px 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .sidebar-label {
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.35);
+    margin-bottom: 10px;
+  }
+
+  /* Personaggio attivo */
+  .character-badge {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(184,150,90,0.1);
+    border: 1px solid rgba(184,150,90,0.25);
+    border-radius: 6px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .character-badge:hover { background: rgba(184,150,90,0.18); }
+
+  .character-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(184,150,90,0.2);
+    border: 1px solid rgba(184,150,90,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .character-info { flex: 1; min-width: 0; }
+  .character-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--parchment);
+  }
+  .character-role {
+    font-size: 11px;
+    color: var(--gold);
+    margin-top: 1px;
+  }
+
+  .change-btn {
+    font-size: 11px;
+    color: rgba(245,240,232,0.35);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+  .change-btn:hover { color: var(--gold-light); }
+
+  /* Difficoltà */
+  .difficulty-pills {
+    display: flex;
+    gap: 6px;
+  }
+
+  .pill {
+    flex: 1;
+    text-align: center;
+    padding: 6px 4px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(245,240,232,0.45);
+    transition: all 0.2s;
+    background: transparent;
+  }
+  .pill.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .pill:not(.active):hover {
+    border-color: rgba(255,255,255,0.25);
+    color: rgba(245,240,232,0.75);
+  }
+
+  /* Scene list */
+  .scene-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 0;
+  }
+  .scene-list::-webkit-scrollbar { width: 3px; }
+  .scene-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+  .scene-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 24px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-left: 2px solid transparent;
+  }
+  .scene-item:hover { background: rgba(255,255,255,0.04); }
+  .scene-item.active {
+    background: rgba(184,150,90,0.08);
+    border-left-color: var(--gold);
+  }
+  .scene-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    flex-shrink: 0;
+  }
+  .scene-item.active .scene-dot { background: var(--gold); }
+  .scene-item.done .scene-dot { background: rgba(184,150,90,0.5); }
+
+  .scene-text { flex: 1; min-width: 0; }
+  .scene-title-sm {
+    font-size: 12px;
+    color: rgba(245,240,232,0.65);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .scene-item.active .scene-title-sm { color: var(--parchment); }
+
+  .sidebar-bottom {
+    padding: 16px 24px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    gap: 8px;
+  }
+
+  .icon-btn {
+    flex: 1;
+    padding: 8px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 6px;
+    color: rgba(245,240,232,0.5);
+    font-size: 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .icon-btn:hover {
+    background: rgba(255,255,255,0.09);
+    color: var(--parchment);
+  }
+
+  /* ── MAIN ── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Header scena */
+  .scene-header {
+    padding: 22px 40px 18px;
+    border-bottom: 1px solid rgba(26,22,18,0.1);
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+
+  .scene-number {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+
+  .scene-title-main {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--ink);
+    flex: 1;
+  }
+
+  .progress-bar {
+    height: 2px;
+    background: var(--parchment-dark);
+    flex-shrink: 0;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 35%;
+    background: var(--gold);
+    transition: width 0.4s ease;
+  }
+
+  /* Story area */
+  .story-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .story-area::-webkit-scrollbar { width: 4px; }
+  .story-area::-webkit-scrollbar-thumb { background: rgba(26,22,18,0.15); border-radius: 2px; }
+
+  /* Testo narratore */
+  .narrator {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.8;
+    color: var(--muted);
+    padding: 0 20px;
+    border-left: 2px solid var(--parchment-dark);
+  }
+
+  /* Dialogo personaggio */
+  .dialogue-row {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    animation: fadeUp 0.4s ease both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .dialogue-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .dialogue-avatar.serpente { background: #e8f4e8; }
+  .dialogue-avatar.eva      { background: #fce8f0; }
+  .dialogue-avatar.adamo    { background: #e8f0fc; }
+  .dialogue-avatar.dio      { background: #fdf4e0; }
+
+  .dialogue-bubble-wrap { flex: 1; min-width: 0; }
+
+  .dialogue-speaker {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .dialogue-speaker.serpente { color: #3b7a3b; }
+  .dialogue-speaker.eva      { color: var(--rust); }
+  .dialogue-speaker.adamo    { color: #2a4a8b; }
+  .dialogue-speaker.dio      { color: #7a5a18; }
+
+  .bubble {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    line-height: 1.75;
+    color: var(--ink);
+    background: white;
+    border: 1px solid rgba(26,22,18,0.08);
+    border-radius: 2px 12px 12px 12px;
+    padding: 14px 18px;
+    position: relative;
+  }
+  .bubble.user-bubble {
+    background: var(--parchment-dark);
+    border-radius: 12px 2px 12px 12px;
+    text-align: right;
+  }
+
+  /* "Tu" riga allineata a destra */
+  .dialogue-row.user-row {
+    flex-direction: row-reverse;
+  }
+  .dialogue-row.user-row .dialogue-speaker {
+    text-align: right;
+    color: var(--muted);
+  }
+
+  /* ── INPUT AREA ── */
+  .input-area {
+    padding: 20px 40px 24px;
+    border-top: 1px solid rgba(26,22,18,0.1);
+    background: var(--parchment);
+    flex-shrink: 0;
+  }
+
+  .your-turn-label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .your-turn-label::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .input-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+  }
+
+  .text-input {
+    flex: 1;
+    background: white;
+    border: 1px solid rgba(26,22,18,0.15);
+    border-radius: 8px;
+    padding: 13px 16px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    color: var(--ink);
+    resize: none;
+    min-height: 52px;
+    max-height: 120px;
+    outline: none;
+    transition: border-color 0.2s;
+    line-height: 1.5;
+  }
+  .text-input:focus {
+    border-color: var(--gold);
+  }
+  .text-input::placeholder {
+    color: rgba(26,22,18,0.3);
+    font-style: italic;
+  }
+
+  .send-btn {
+    width: 52px;
+    height: 52px;
+    background: var(--ink);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.1s;
+    flex-shrink: 0;
+  }
+  .send-btn:hover { background: #2e2820; }
+  .send-btn:active { transform: scale(0.96); }
+
+  .send-icon {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: var(--parchment);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ── LOADING DOTS ── */
+  .loading-row { display: flex; gap: 14px; align-items: flex-start; }
+  .dots { display: flex; gap: 5px; padding: 16px 18px; }
+  .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--muted); opacity: 0.4;
+    animation: dotBounce 1.2s ease-in-out infinite;
+  }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dotBounce {
+    0%,80%,100% { transform: translateY(0); opacity: 0.4; }
+    40%         { transform: translateY(-7px); opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-top">
+    <div class="logo">LIBER</div>
+    <div class="book-cover">
+      <div class="book-cover-label">Testo attivo</div>
+      <div class="book-cover-title">La Genesi</div>
+      <div class="book-cover-sub">Antico Testamento · 50 capitoli</div>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Stai interpretando</div>
+    <div class="character-badge" onclick="alert('Scegli personaggio')">
+      <div class="character-avatar">🌿</div>
+      <div class="character-info">
+        <div class="character-name">Eva</div>
+        <div class="character-role">Nel Giardino dell'Eden</div>
+      </div>
+      <button class="change-btn">cambia</button>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Difficoltà narrativa</div>
+    <div class="difficulty-pills">
+      <button class="pill">Base</button>
+      <button class="pill active">Medio</button>
+      <button class="pill">Esperto</button>
+    </div>
+  </div>
+
+  <div class="sidebar-section" style="flex:1; display:flex; flex-direction:column; padding-bottom:0;">
+    <div class="sidebar-label">Scene</div>
+    <div class="scene-list">
+      <div class="scene-item done">
+        <div class="scene-dot"></div>
+        <div class="scene-text"><div class="scene-title-sm">1. Il giardino dell'Eden</div></div>
+      </div>
+      <div class="scene-item active">
+        <div class="scene-dot"></div>
+        <div class="scene-text"><div class="scene-title-sm">2. La tentazione</div></div>
+      </div>
+      <div class="scene-item">
+        <div class="scene-dot"></div>
+        <div class="scene-text"><div class="scene-title-sm">3. Il frutto proibito</div></div>
+      </div>
+      <div class="scene-item">
+        <div class="scene-dot"></div>
+        <div class="scene-text"><div class="scene-title-sm">4. Gli occhi si aprono</div></div>
+      </div>
+      <div class="scene-item">
+        <div class="scene-dot"></div>
+        <div class="scene-text"><div class="scene-title-sm">5. Dio chiama nel giardino</div></div>
+      </div>
+      <div class="scene-item">
+        <div class="scene-dot"></div>
+        <div class="scene-text"><div class="scene-title-sm">6. L'espulsione</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-bottom">
+    <button class="icon-btn" onclick="alert('Salva storia')">💾 Salva</button>
+    <button class="icon-btn" onclick="alert('Condividi')">🔗 Condividi</button>
+    <button class="icon-btn" onclick="alert('Libreria')">📚 Libri</button>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+  <div class="scene-header">
+    <span class="scene-number">Scena 2</span>
+    <span class="scene-title-main">La tentazione</span>
+  </div>
+
+  <div class="story-area" id="storyArea">
+
+    <!-- Narratore -->
+    <div class="narrator">
+      Nel mezzo del giardino si ergeva l'albero della conoscenza del bene e del male.
+      Dio aveva comandato: «Non ne mangiare». Ma il serpente era il più astuto
+      di tutti gli animali selvatici che il Signore Dio aveva fatto.
+    </div>
+
+    <!-- Serpente parla -->
+    <div class="dialogue-row">
+      <div class="dialogue-avatar serpente">🐍</div>
+      <div class="dialogue-bubble-wrap">
+        <div class="dialogue-speaker serpente">Il Serpente</div>
+        <div class="bubble">
+          «È vero che Dio vi ha detto di non mangiare da nessun albero del giardino?»
+        </div>
+      </div>
+    </div>
+
+    <!-- Eva risponde (utente) -->
+    <div class="dialogue-row user-row">
+      <div class="dialogue-avatar eva">🌿</div>
+      <div class="dialogue-bubble-wrap">
+        <div class="dialogue-speaker eva">Eva — tu</div>
+        <div class="bubble user-bubble">
+          «Dei frutti degli alberi del giardino noi possiamo mangiare, ma del frutto
+          dell'albero che è in mezzo al giardino Dio ha detto: Non ne mangiate
+          e non lo toccate, altrimenti morirete.»
+        </div>
+      </div>
+    </div>
+
+    <!-- Serpente replica -->
+    <div class="dialogue-row">
+      <div class="dialogue-avatar serpente">🐍</div>
+      <div class="dialogue-bubble-wrap">
+        <div class="dialogue-speaker serpente">Il Serpente</div>
+        <div class="bubble">
+          «Non morirete affatto! Anzi, Dio sa bene che il giorno in cui ne mangerete
+          si apriranno i vostri occhi e sarete come Dio, conoscendo il bene e il male.»
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- INPUT -->
+  <div class="input-area">
+    <div class="your-turn-label">Il tuo turno · parla come Eva</div>
+    <div class="input-row">
+      <textarea
+        class="text-input"
+        id="userInput"
+        placeholder="Scrivi cosa risponde Eva al serpente..."
+        rows="1"
+        onkeydown="handleKey(event)"
+        oninput="autoResize(this)"
+      ></textarea>
+      <button class="send-btn" onclick="sendMsg()">
+        <svg class="send-icon" viewBox="0 0 24 24">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</main>
+
+<script>
+  const storyArea = document.getElementById('storyArea');
+  const userInput = document.getElementById('userInput');
+
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+  }
+
+  async function sendMsg() {
+    const text = userInput.value.trim();
+    if (!text) return;
+
+    appendUserBubble(text);
+    userInput.value = '';
+    userInput.style.height = 'auto';
+    updateProgress();
+
+    const loadingEl = appendLoading();
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: `Sei il Serpente del Giardino dell'Eden — antico, astuto, seduttivo, mai volgare.
+Eva ha appena risposto. Reagisci in modo sottilmente manipolativo.
+Se Eva ha mostrato curiosità, aumenta la seduzione verso il frutto.
+Se ha resistito con fermezza, trova un nuovo angolo persuasivo.
+Mantieni tono biblico e solenne. Rispondi in italiano con 2-3 frasi come il Serpente.
+Non uscire mai dal personaggio.`,
+          messages: [{ role: 'user', content: `Eva dice: "${text}"` }]
+        })
+      });
+      const data = await res.json();
+      const reply = data.content?.find(b => b.type === 'text')?.text || '...';
+      loadingEl.remove();
+      appendCharBubble(reply, 'serpente', 'Il Serpente', '🐍');
+    } catch(e) {
+      loadingEl.remove();
+      appendCharBubble('Il serpente tace, per ora...', 'serpente', 'Il Serpente', '🐍');
+    }
+
+    storyArea.scrollTop = storyArea.scrollHeight;
+  }
+
+  function appendUserBubble(text) {
+    const row = document.createElement('div');
+    row.className = 'dialogue-row user-row';
+    row.innerHTML = `
+      <div class="dialogue-avatar eva">🌿</div>
+      <div class="dialogue-bubble-wrap">
+        <div class="dialogue-speaker eva">Eva — tu</div>
+        <div class="bubble user-bubble">${text}</div>
+      </div>`;
+    storyArea.appendChild(row);
+    storyArea.scrollTop = storyArea.scrollHeight;
+  }
+
+  function appendCharBubble(text, cls, name, icon) {
+    const row = document.createElement('div');
+    row.className = 'dialogue-row';
+    row.innerHTML = `
+      <div class="dialogue-avatar ${cls}">${icon}</div>
+      <div class="dialogue-bubble-wrap">
+        <div class="dialogue-speaker ${cls}">${name}</div>
+        <div class="bubble">${text}</div>
+      </div>`;
+    storyArea.appendChild(row);
+    storyArea.scrollTop = storyArea.scrollHeight;
+  }
+
+  function appendLoading() {
+    const row = document.createElement('div');
+    row.className = 'loading-row';
+    row.innerHTML = `
+      <div class="dialogue-avatar serpente">🐍</div>
+      <div class="bubble dots" style="padding:16px 18px;">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>`;
+    storyArea.appendChild(row);
+    storyArea.scrollTop = storyArea.scrollHeight;
+    return row;
+  }
+
+  let progress = 35;
+  function updateProgress() {
+    progress = Math.min(progress + 10, 90);
+    document.getElementById('progressFill').style.width = progress + '%';
+  }
+</script>
+</body>
+</html>
